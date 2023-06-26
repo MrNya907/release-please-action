@@ -1,1 +1,94 @@
-添加测试文件
+def params_dict(model_dict):
+"""
+取出json字典中有值的键值对
+"""
+    model_keys = list(model_dict.keys())
+    res_dict = {}
+    temp_dict ={}
+    for i in model_keys:
+      if len(model_dict[i])>0:
+        temp_dict[i]=model_dict[i]
+    for key,values in temp_dict.items():
+        t = []
+        for i in values:
+            if i=='False':
+                t.append(False)
+            elif i=='True':
+                t.append(True)
+            else:
+                t.append(i)
+        res_dict[key]=t
+    return res_dict
+
+def flatten_list(nested_list):
+    """
+    递归实现将多维数据平铺成一维数组
+    """
+    return [item for sublist in nested_list for item in (flatten_list(sublist) if isinstance(sublist, list) else [sublist])]
+
+def list_combi(com_list):
+    """
+    描述：对不同长度的子列表全组合数
+    """
+    from allpairspy import AllPairs
+    res = []
+    for pairs in AllPairs(com_list[:2]):
+        pairs = list(pairs)
+        res.append(pairs)
+    for i in range(2, len(com_list)):
+        new_r = []
+        if len(com_list[i])==1:
+            for ri in res:
+                r = ri.copy()
+                r.append(com_list[i][0])
+                new_r.append(r)
+            res = new_r
+        else:
+            for i in com_list[i]:
+                for j in res:
+                    t = j.copy()
+                    t.append(i)
+                    new_r.append(t)
+            res = new_r
+    return res
+
+def model_param_combi(model_res_dict,fit_res_dict):
+    """
+    描述：根据字典格式，返回模型参数，训练参数全组合序列
+    """
+    model = []
+    fit = []
+    if len(model_res_dict)>0:
+      model_keys = list(model_res_dict.keys())
+      model_pairs = []
+      for i in model_keys:
+        model_pairs.append(model_res_dict[i])
+      if len(model_pairs)<=1:
+        model_pairs = flatten_list(model_pairs)
+        model_com = [{model_keys[0]:i} for i in model_pairs]
+        model = model_com
+      else:
+          model_com = list_combi(model_pairs)
+          for temp in model_com:
+              temp_dict = {}
+              for j in range(len(temp)):
+                  temp_dict[model_keys[j]] = temp[j]
+              model.append(temp_dict)
+
+    if len(fit_res_dict)>0:
+      fit_keys = list(fit_res_dict.keys())
+      fit_pairs = []
+      for i in fit_keys:
+        fit_pairs.append(fit_res_dict[i])
+      if len(fit_pairs)<=1:
+        fit_pairs = flatten_list(fit_pairs)
+        fit_com = [{fit_keys[0]:i} for i in fit_pairs]
+        fit = fit_com
+      else:
+          fit_com = list_combi(fit_pairs)
+          for temp in fit_com:
+              temp_dict = {}
+              for j in range(len(temp)):
+                  temp_dict[fit_keys[j]] = temp[j]
+              fit.append(temp_dict)
+    return model,fit
